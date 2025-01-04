@@ -1,0 +1,161 @@
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(0.2px);
+}
+
+.modal-wrapper {
+    background: rgba(14, 16, 37, 0.8);
+    border-radius: 20px;
+    width: 45%;
+    max-width: 800px;
+    position: relative;
+    backdrop-filter: blur(10px);
+}
+
+.modal-content {
+    padding: 40px;
+}
+
+.header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.header h1 {
+    font-size: 36px;
+    background: linear-gradient(135deg, #38BDF8, #818CF8);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    margin-bottom: 8px;
+}
+
+.header p {
+    color: #94A3B8;
+    font-size: 16px;
+}
+
+.features-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 32px;
+}
+
+.feature-box {
+    background: #0c1932;
+    border-radius: 12px;
+    padding: 20px;
+}
+
+.feature-box .icon {
+    width: 24px;
+    height: 24px;
+    margin-bottom: 12px;
+}
+
+.cyan {
+    color: #22D3EE;
+}
+
+.purple {
+    color: #A78BFA;
+}
+
+.blue {
+    color: #60A5FA;
+}
+
+.pink {
+    color: #F472B6;
+}
+
+.rose {
+    color: #FB7185;
+}
+
+.emerald {
+    color: #34D399;
+}
+
+.feature-box h3 {
+    color: #F8FAFC;
+    font-size: 16px;
+    font-weight: 500;
+    margin-bottom: 8px;
+}
+
+.feature-box p {
+    color: #94A3B8;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.launch-btn {
+    width: 100%;
+    padding: 14px;
+    background: linear-gradient(135deg, #0b4e6b, #32386b);
+    border: none;
+    border-radius: 10px;
+    color: white;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+
+.launch-btn:hover {
+    opacity: 0.9;
+}
+
+.close-btn {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    background: none;
+    border: none;
+    color: #94A3B8;
+    cursor: pointer;
+    padding: 4px;
+    transition: color 0.2s;
+}
+
+.close-btn:hover {
+    color: #F8FAFC;
+}
+
+@media (max-width: 768px) {
+    .features-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 480px) {
+    .features-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .modal-content {
+        padding: 24px;
+    }
+}
+
+.icon-box {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.05);
+    margin-bottom: 12px;
+}
+
+.icon-box svg {
+    stroke-width: 1.5;
+}

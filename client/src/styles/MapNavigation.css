@@ -1,0 +1,191 @@
+.map-nav {
+    display: inline-flex;
+    align-items: center;
+    color: #fff;
+    padding: 10px;
+    border-radius: 50px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    transition: all 0.4s ease-in-out;
+    position: fixed;
+    left: 20px;
+    top: 20px;
+    z-index: 1000;
+    background: rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(4px);
+    min-width: 55px;
+    height: 55px;
+}
+
+.map-nav:hover {
+    border-color: #24D2FB;
+}
+
+.map-nav__button {
+    display: grid;
+    place-items: center;
+    width: 35px;
+    height: 35px;
+    cursor: pointer;
+    background: transparent;
+    color: inherit;
+    border: none;
+    outline: none;
+    transition: all 0.4s ease-in-out;
+    position: absolute;
+    right: 10px;
+}
+
+.map-nav__button i {
+    font-size: 1.2em;
+    transition: all 0.4s ease-in-out;
+}
+
+.map-nav__button:hover {
+    color: #24D2FB;
+}
+
+.map-nav.expanded {
+    width: 200px;
+    height: 200px;
+    border-radius: 12px;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+}
+
+.map-nav.expanded .map-nav__button {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 24px;
+    height: 24px;
+    z-index: 2;
+}
+
+.map-nav.expanded .map-nav__button i {
+    font-size: 1.1em;
+}
+
+.map-nav__content {
+    width: 0;
+    height: 0;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.4s ease-in-out;
+    overflow: hidden;
+    position: relative;
+}
+
+.map-nav.expanded .map-nav__content {
+    width: 180px;
+    height: 180px;
+    opacity: 1;
+    visibility: visible;
+    margin-left: 0;
+}
+
+.minimap-title {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    padding: 8px;
+    background: rgba(0, 0, 0, 0.4);
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 10px;
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+
+    .map-nav {
+        display: inline-flex;
+        align-items: center;
+        color: #fff;
+        padding: 10px;
+        border-radius: 50px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        transition: all 0.4s ease-in-out;
+        position: fixed;
+        left: 20px;
+        top: 20px;
+        z-index: 1000;
+        background: rgba(0, 0, 0, 0.3);
+        backdrop-filter: blur(4px);
+        min-width: 55px;
+        height: 55px;
+    }
+
+    .map-nav:hover {
+        border-color: #24D2FB;
+    }
+
+    .map-nav__button {
+        display: grid;
+        place-items: center;
+        width: 35px;
+        height: 35px;
+        cursor: pointer;
+        background: transparent;
+        color: inherit;
+        border: none;
+        outline: none;
+        transition: all 0.4s ease-in-out;
+        position: absolute;
+        right: 10px;
+    }
+
+    .map-nav__button i {
+        font-size: 1.2em;
+        transition: all 0.4s ease-in-out;
+    }
+
+    .map-nav__button:hover {
+        color: #24D2FB;
+    }
+
+    .map-nav.expanded {
+        width: 200px;
+        height: 200px;
+        border-radius: 12px;
+        padding: 10px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .map-nav.expanded .map-nav__button {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        width: 24px;
+        height: 24px;
+        z-index: 2;
+    }
+
+    .map-nav.expanded .map-nav__button i {
+        font-size: 1.1em;
+    }
+
+    .map-nav__content {
+        position: fixed;
+        width: 0;
+        height: 0;
+        opacity: 0;
+        transform: scale(0.95);
+        visibility: hidden;
+        transition: all 0.4s ease-in-out;
+        overflow: hidden;
+    }
+
+    .map-nav.expanded .map-nav__content {
+        width: 180px;
+        height: 180px;
+        opacity: 1;
+        transform: scale(1);
+        visibility: visible;
+        margin-left: 0;
+    }
+
+    z-index: 1;
+    backdrop-filter: blur(4px);
+    border-bottom: 1px solid rgba(139, 136, 136, 0.1);
+}

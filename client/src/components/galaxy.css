@@ -1,0 +1,40 @@
+.galaxy-label-container {
+    pointer-events: none;
+    transform: scale(var(--scale, 1));
+    transition: transform 0.3s ease-out;
+  }
+  
+  .galaxy-name {
+    color: white;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.8rem;
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+    white-space: nowrap;
+    opacity: var(--opacity, 1);
+    transition: opacity 0.3s ease-out;
+  }
+  
+  .galaxy-underline {
+    height: 1px;
+    width: 100%;
+    margin-top: 2px;
+    transition: all 0.3s ease-out;
+  }
+  
+  /* Add hover animations */
+  @keyframes galaxyHoverGlow {
+    0% {
+      filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.5));
+    }
+    50% {
+      filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.8));
+    }
+    100% {
+      filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.5));
+    }
+  }
+  
+  .galaxy-label-container:hover {
+    --scale: 1.1;
+    animation: galaxyHoverGlow 2s infinite;
+  }

@@ -1,0 +1,380 @@
+/* Reset and base styles */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+/* Base styles */
+html {
+    line-height: 1.5;
+    -webkit-text-size-adjust: 100%;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: #0a0f1e;
+    color: #e6e6ff;
+}
+
+/* Layout */
+.w-screen {
+    width: 100vw;
+}
+
+.h-screen {
+    height: 100vh;
+}
+
+/* Canvas styles */
+canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+/* Animation */
+@keyframes twinkle {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.5;
+    }
+}
+
+.animate-twinkle {
+    animation: twinkle 3s ease-in-out infinite;
+}
+
+/* Layout utilities */
+.flex {
+    display: flex;
+    margin: 2px;
+}
+
+.justify-between {
+    justify-content: space-between;
+}
+
+.flex-col {
+    flex-direction: column;
+}
+
+.items-center {
+    align-items: center;
+}
+
+.justify-center {
+    justify-content: center;
+}
+
+.text-center {
+    text-align: center;
+}
+
+/* Z-index utilities */
+.z-0 {
+    z-index: 0;
+}
+
+.z-10 {
+    z-index: 10;
+}
+
+.-z-1 {
+    z-index: -1;
+}
+
+.-z-10 {
+    z-index: -10;
+}
+
+/* Position utilities */
+.relative {
+    position: relative;
+}
+
+.absolute {
+    position: absolute;
+}
+
+.top-0 {
+    top: 0;
+}
+
+.left-0 {
+    left: 0;
+}
+
+.overflow-hidden {
+    overflow: hidden;
+}
+
+/* Spacing utilities */
+.p-6 {
+    padding: 1.5rem;
+}
+
+.px-8 {
+    padding-left: 2rem;
+    padding-right: 2rem;
+}
+
+.py-3 {
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+}
+
+.mb-4 {
+    margin-bottom: 1rem;
+}
+
+.mb-8 {
+    margin-bottom: 2rem;
+}
+
+.gap-12{
+    margin-left: 1rem;
+    margin-right: 3rem;
+}
+
+/* Sizing utilities */
+.w-full {
+    width: 100%;
+}
+
+.h-full {
+    height: 100%;
+}
+
+.min-h-screen {
+    min-height: 100vh;
+}
+
+.h-\[calc\(100vh-100px\)\] {
+    height: calc(100vh - 100px);
+}
+
+/* Button styles */
+.rounded-full {
+    border-radius: 9999px;
+}
+
+.transition-all {
+    transition-property: all;
+}
+
+.duration-300 {
+    transition-duration: 300ms;
+}
+
+.ease-in-out {
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.scale-110 {
+    transform: scale(1.1);
+}
+
+/* Typography */
+.text-3xl {
+    font-size: 1.875rem;
+}
+
+.text-6xl {
+    font-size: 3.75rem;
+}
+
+.text-xl {
+    font-size: 1.25rem;
+}
+
+.text-lg {
+    font-size: 1.125rem;
+}
+
+.font-bold {
+    font-weight: 700;
+}
+
+.font-semibold {
+    font-weight: 600;
+}
+
+/* Colors */
+.bg-black {
+    background-color: #000000;
+}
+
+.bg-indigo-700 {
+    background-color: #4338ca;
+}
+
+.bg-blue-900 {
+    background-color: #1e3a8a;
+}
+
+.text-white {
+    color: #ffffff;
+}
+
+.text-blue-100 {
+    color: #dbeafe;
+}
+
+.text-blue-200 {
+    color: #bfdbfe;
+}
+
+.text-indigo-100 {
+    color: #e0e7ff;
+}
+
+.text-indigo-200 {
+    color: #c7d2fe;
+}
+
+.text-purple-100 {
+    color: #ede9fe;
+}
+
+.text-purple-200 {
+    color: #ddd6fe;
+}
+
+/* Hover states */
+.hover\:text-blue-100:hover {
+    color: #dbeafe;
+}
+
+.hover\:text-indigo-100:hover {
+    color: #e0e7ff;
+}
+
+.hover\:text-purple-100:hover {
+    color: #ede9fe;
+}
+.embark-button {
+    position: relative;
+    padding: 20px 40px;
+    color: #f5f5f7;
+    text-transform: uppercase;
+    text-decoration: none;
+    letter-spacing: 5px;
+    font-size: 13px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, .5);
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    transform: translate(-50%, 0);
+    margin-left: 10rem;
+   
+    /* Adjusted for centering */
+}
+
+.embark-button::before {
+    content: "";
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    bottom: 2px;
+    width: 50%;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.embark-button span:nth-child(1) {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(to right, #0c002b, #1779ff);
+    animation: animate1 2s linear infinite;
+    animation-delay: 1s;
+}
+
+.embark-button span:nth-child(2) {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 2px;
+    height: 100%;
+    background: linear-gradient(to bottom, #0c002b, #1779ff);
+    animation: animate2 2s linear infinite;
+    animation-delay: 2s;
+}
+
+.embark-button span:nth-child(3) {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(to left, #0c002b, #1779ff);
+    animation: animate3 2s linear infinite;
+    animation-delay: 1s;
+}
+
+.embark-button span:nth-child(4) {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 2px;
+    height: 100%;
+    background: linear-gradient(to top, #0c002b, #1779ff);
+    animation: animate4 2s linear infinite;
+    animation-delay: 2s;
+}
+
+@keyframes animate1 {
+    0% {
+        transform: translateX(-100%);
+    }
+
+    100% {
+        transform: translateX(100%);
+    }
+}
+
+@keyframes animate2 {
+    0% {
+        transform: translateY(-100%);
+    }
+
+    100% {
+        transform: translateY(100%);
+    }
+}
+
+@keyframes animate3 {
+    0% {
+        transform: translateX(100%);
+    }
+
+    100% {
+        transform: translateX(-100%);
+    }
+}
+
+@keyframes animate4 {
+    0% {
+        transform: translateY(100%);
+    }
+
+    100% {
+        transform: translateY(-100%);
+    }
+}
+
+.embark-button:hover {
+    background: rgba(23, 105, 255, 0.1);
+    color: #f4f4f4;
+}

@@ -1,0 +1,123 @@
+.galaxy-info {
+  position: absolute;
+  transform: translate(-50%, 50px); /* Move below the galaxy */
+  background: rgba(0, 0, 0, 0.7);
+  padding: 4px 8px; /* Reduced padding */
+  border-radius: 4px;
+  color: white;
+  font-family: 'Monaco', monospace;
+  pointer-events: none;
+  white-space: nowrap;
+  backdrop-filter: blur(4px);
+  font-size: 0.8em; /* Reduced font size */
+  z-index: 1;
+}
+
+.galaxy-stats {
+  font-size: 0.9em; /* Slightly smaller stats */
+  opacity: 0.9;
+}
+
+.galaxy-label-container {
+  position: relative;
+  width: max-content;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.galaxy-name {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.6rem;
+  /* Increased font size */
+  white-space: nowrap;
+  text-shadow: 0 0 4px rgba(255, 255, 255, 0.5),
+    0 0 8px rgba(255, 255, 255, 0.3);
+  /* Enhanced glow */
+  user-select: none;
+  letter-spacing: 0.02em;
+}
+
+.galaxy-underline {
+  width: 30px;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.8);
+  margin-top: 1px;
+  box-shadow: 0 0 4px rgba(255, 255, 255, 0.4);
+}
+.galaxy-label-line {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.galaxy-label-line::before {
+  content: '';
+  display: block;
+  width: 15px;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.5);
+  box-shadow: 0 0 4px rgba(255, 255, 255, 0.3);
+}
+
+
+.transaction-info {
+  position: absolute;
+  transform: translate(-50%, -120%);
+  background: rgba(0, 0, 0, 0.8);
+  padding: 8px 12px;
+  border-radius: 4px;
+  color: white;
+  font-family: 'Monaco', monospace;
+  pointer-events: none;
+  white-space: nowrap;
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  z-index: 2;
+}
+
+.transaction-id {
+  font-size: 0.8em;
+  color: #8e9aaf;
+  margin-bottom: 4px;
+}
+
+.transaction-amount {
+  font-size: 0.9em;
+  color: #ffffff;
+}
+
+.planet-info {
+  position: absolute;
+  transform: translate(-50%, -120%);
+  background: rgba(0, 0, 0, 0.8);
+  padding: 8px 12px;
+  border-radius: 4px;
+  color: white;
+  font-family: 'Monaco', monospace;
+  pointer-events: none;
+  white-space: nowrap;
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.planet-info .amount {
+  font-size: 0.9em;
+  color: #ffffff;
+  margin-top: 4px;
+}
+
+.planet-info .click-info {
+  font-size: 0.8em;
+  color: #66bb6a;
+  margin-top: 4px;
+  font-style: italic;
+}
+
+/* Add hover effect for better visibility */
+.galaxy-info:hover,
+.galaxy-name:hover {
+  opacity: 1;
+}

@@ -1,0 +1,184 @@
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(4px);
+}
+
+.modal-wrapper {
+    background: #0B1426;
+    border-radius: 16px;
+    width: 90%;
+    max-width: 600px;
+}
+
+.modal-content {
+    padding: 24px;
+    position: relative;
+}
+
+.header {
+    text-align: center;
+    margin-bottom: 24px;
+}
+
+.header h1 {
+    font-size: 24px;
+    background: linear-gradient(135deg, #60A5FA, #818CF8);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    margin-bottom: 4px;
+}
+
+.header p {
+    color: #64748B;
+    font-size: 14px;
+}
+
+.features-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 24px;
+}
+
+.feature-box {
+    background: #0f1d36;
+    border-radius: 8px;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.icon-box {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.feature-box h3 {
+    color: #F8FAFC;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.feature-box p {
+    color: #64748B;
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+.launch-btn {
+    width: 100%;
+    padding: 12px;
+    background: #1d4ed8;
+    border: none;
+    border-radius: 8px;
+    color: white;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+@media (max-width: 480px) {
+    .features-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .feature-box {
+        flex-direction: row;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .feature-box h3 {
+        margin: 0;
+    }
+}
+
+.launch-btn:hover {
+    opacity: 0.9;
+}
+.close-btn {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: none;
+    border: none;
+    color: #94A3B8;
+    cursor: pointer;
+    z-index: 10;
+    /* Ensure button stays on top */
+    padding: 8px;
+}
+
+.close-btn:hover {
+    color: #F8FAFC;
+}
+
+/* Colors */
+.cyan {
+    color: #22D3EE;
+}
+
+.purple {
+    color: #A78BFA;
+}
+
+.blue {
+    color: #60A5FA;
+}
+
+.pink {
+    color: #F472B6;
+}
+
+.rose {
+    color: #FB7185;
+}
+
+.emerald {
+    color: #34D399;
+}
+
+/* Media Queries */
+@media (min-width: 480px) {
+    .features-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (min-width: 768px) {
+    .modal-content {
+        padding: 40px;
+    }
+
+    .header {
+        margin-bottom: 40px;
+    }
+
+    .header h1 {
+        font-size: 36px;
+    }
+
+    .header p {
+        font-size: 16px;
+    }
+
+    .features-grid {
+        grid-template-columns: repeat(3, 1fr);
+        margin-bottom: 32px;
+    }
+}
+
+@media (min-width: 1024px) {
+    .modal-wrapper {
+        width: 45%;
+    }
+}
