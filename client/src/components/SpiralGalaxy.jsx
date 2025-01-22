@@ -7,11 +7,9 @@ import '../styles/galaxy.css';
 import { PREFIXES, SUFFIXES, GALAXY_COLORS } from './GalaxyStyles';
 
 const FIXED_GALAXY_SIZE = 8;
-const MINIMAL_RINGS = 4;
 const NAME_OPACITY_BASE = 0.7;
-const HOVER_THRESHOLD = 200;
-const PARTICLES_PER_ARM = 500; // Increased from 200
-const ARMS = 6; 
+const PARTICLES_PER_ARM = 500;
+const ARMS = 6;
 const ARM_ANGLE_STEP = (2 * Math.PI) / ARMS;
 
 const galaxyNameCache = new Map();
@@ -33,10 +31,10 @@ const createSpiralParticles = (colorScheme, isHovered) => {
   const colors = [];
   const sizes = [];
   
-  // Core particles
-  const coreParticles = 100;  // Increased from 50
+  // Core particles - increased brightness and density
+  const coreParticles = 150;  // Increased from 100
   for (let i = 0; i < coreParticles; i++) {
-    const radius = Math.random() * 2;  // Increased from 1.5
+    const radius = Math.random() * 2.5;  // Increased from 2
     const angle = Math.random() * Math.PI * 2;
     const y = (Math.random() - 0.5) * 0.5;
     
@@ -47,37 +45,35 @@ const createSpiralParticles = (colorScheme, isHovered) => {
     );
     
     const coreColor = new THREE.Color(colorScheme.core);
-    coreColor.multiplyScalar(isHovered ? 3 : 2);  // Increased brightness
+    coreColor.multiplyScalar(isHovered ? 4 : 3);  // Increased brightness
     colors.push(coreColor.r, coreColor.g, coreColor.b);
-    sizes.push(Math.random() * 0.8 + 0.5);  // Increased size
+    sizes.push(Math.random() * 1.0 + 0.6);  // Increased size
   }
 
-  // Spiral arms
+  // Spiral arms - increased brightness
   for (let arm = 0; arm < ARMS; arm++) {
     const startAngle = arm * ARM_ANGLE_STEP;
     const armColor = new THREE.Color(colorScheme.arms[arm % colorScheme.arms.length]);
     
     for (let i = 0; i < PARTICLES_PER_ARM; i++) {
       const distance = (i / PARTICLES_PER_ARM) * FIXED_GALAXY_SIZE;
-      const spiral = startAngle + (distance * 1);  // Increased from 0.75 for tighter spiral
-      const spread = (1 - i / PARTICLES_PER_ARM) * 0.8;  // Increased spread
+      const spiral = startAngle + (distance * 1);
+      const spread = (1 - i / PARTICLES_PER_ARM) * 0.8;
       const randomSpread = (Math.random() - 0.5) * spread;
       
       const x = Math.cos(spiral + randomSpread) * distance;
       const z = Math.sin(spiral + randomSpread) * distance;
-      const y = (Math.random() - 0.5) * (distance * 0.15);  // Reduced vertical spread
+      const y = (Math.random() - 0.5) * (distance * 0.15);
       
       positions.push(x, y, z);
       
-      // Color variation along the arm
       const colorVar = Math.random() * 0.3 + 0.7;
       const mixedColor = armColor.clone();
-      mixedColor.multiplyScalar(isHovered ? colorVar * 2 : colorVar * 1.5);  // Increased brightness
+      mixedColor.multiplyScalar(isHovered ? colorVar * 3 : colorVar * 2);  // Increased brightness
       colors.push(mixedColor.r, mixedColor.g, mixedColor.b);
       
-      // Size variation based on distance from center
-      const sizeVar = Math.max(0.2, 1 - (distance / FIXED_GALAXY_SIZE));  // Increased minimum size
-      sizes.push(sizeVar * (Math.random() * 0.7 + 0.5));  // Increased overall size
+      const sizeVar = Math.max(0.3, 1 - (distance / FIXED_GALAXY_SIZE));  // Increased minimum size
+      sizes.push(sizeVar * (Math.random() * 0.8 + 0.6));  // Increased overall size
     }
   }
 
@@ -97,7 +93,7 @@ const GalaxyParticles = memo(({ colorScheme, isHovered }) => {
 
   useFrame((state) => {
     if (particleRef.current) {
-      particleRef.current.rotation.y += 0.002;  // Increased from 0.001
+      particleRef.current.rotation.y += 0.002;
     }
   });
 
@@ -112,20 +108,18 @@ const GalaxyParticles = memo(({ colorScheme, isHovered }) => {
   return (
     <points ref={particleRef} geometry={geometry}>
       <pointsMaterial
-  size={0.3}  // Increased from 0.15
-  vertexColors
-  transparent
-  opacity={1}  // Increased from 0.8
-  sizeAttenuation
-  blending={THREE.AdditiveBlending}
-  depthWrite={false}
-/>
+        size={0.35}  // Increased from 0.3
+        vertexColors
+        transparent
+        opacity={1}
+        sizeAttenuation
+        blending={THREE.AdditiveBlending}
+        depthWrite={false}
+      />
     </points>
   );
 });
 
-
-  
 const SpiralGalaxy = ({ 
   transactions, 
   position, 
@@ -137,11 +131,11 @@ const SpiralGalaxy = ({
 }) => {
   const { camera } = useThree();
   const groupRef = useRef();
+  const hitboxRef = useRef();
   const [nameOpacity, setNameOpacity] = useState(NAME_OPACITY_BASE);
   const [isInitialized, setIsInitialized] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const [hoveredPlanet, setHoveredPlanet] = useState(null);
-  const hoverTimerRef = useRef(null);
 
   const safeColorIndex = Math.abs(colorIndex) % GALAXY_COLORS.length;
   const colorScheme = GALAXY_COLORS[safeColorIndex] || GALAXY_COLORS[0];
@@ -199,21 +193,14 @@ const SpiralGalaxy = ({
           lodLevel={lodLevel}
         />
       ) : (
-        <>
-          <mesh
-            onClick={handleGalaxyClick}
-            onPointerEnter={handlePointerEnter}
-            onPointerLeave={handlePointerLeave}
-          >
-            <sphereGeometry args={[isHovered ? 1.2 : 0.8, 32, 32]} />
-            <meshPhysicalMaterial 
-              color={colorScheme.core}
-              emissive={colorScheme.core}
-              emissiveIntensity={isHovered ? 4 : 2}
-              metalness={0.2}
-              roughness={0.3}
-              clearcoat={1}
-            />
+        <group
+          onClick={handleGalaxyClick}
+          onPointerEnter={handlePointerEnter}
+          onPointerLeave={handlePointerLeave}
+        >
+          <mesh ref={hitboxRef}>
+            <sphereGeometry args={[FIXED_GALAXY_SIZE * 1.2, 32, 32]} />
+            <meshBasicMaterial visible={false} transparent opacity={0} />
           </mesh>
 
           <GalaxyParticles colorScheme={colorScheme} isHovered={isHovered} />
@@ -221,8 +208,8 @@ const SpiralGalaxy = ({
           {isHovered && (
             <pointLight
               color={colorScheme.core}
-              intensity={50}
-              distance={160}
+              intensity={80}
+              distance={180}
               decay={1.5}
             />
           )}
@@ -233,9 +220,9 @@ const SpiralGalaxy = ({
               style={{
                 transform: 'translate(0, -50%)',
                 opacity: nameOpacity,
-                transition: 'opacity 0.3s ease-out'
+                transition: 'opacity 0.3s ease-out',
+                pointerEvents: 'none'
               }}
-              onClick={handleGalaxyClick}
             >
               <div className="galaxy-label-container">
                 <div className="galaxy-name">{galaxyName}</div>
@@ -243,14 +230,14 @@ const SpiralGalaxy = ({
                   className="galaxy-underline" 
                   style={{
                     backgroundColor: colorScheme.core,
-                    boxShadow: `0 0 ${isHovered ? '25px' : '10px'} ${colorScheme.core}`,
+                    boxShadow: `0 0 ${isHovered ? '30px' : '15px'} ${colorScheme.core}`,
                     opacity: isHovered ? 1 : 0.8
                   }}
                 />
               </div>
             </Html>
           )}
-        </>
+        </group>
       )}
     </group>
   );

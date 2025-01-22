@@ -3,7 +3,7 @@ import * as THREE from 'three';
 class UniverseOptimizer {
   constructor() {
     this.chunks = new Map();
-    this.chunkSize = 200; // Increased chunk size for better distribution
+    this.chunkSize = 300; // Increased for better initial distribution
     this.visibleChunks = new Set();
     this.frustum = new THREE.Frustum();
     this.projScreenMatrix = new THREE.Matrix4();
@@ -11,41 +11,64 @@ class UniverseOptimizer {
     this.loadedChunks = new Set();
     this.chunkLoadQueue = [];
     this.isLoading = false;
+    this.initialized = false;
+    this.lastUpdate = 0;
+    this.updateInterval = 16; // 60fps target
+
+    // Optimization flags
+    this.needsUpdate = true;
+    this.frameCount = 0;
     
-    // Dynamic parameters that adjust based on performance
+    // Pre-allocated vectors for calculations
+    this.tempVector = new THREE.Vector3();
+    this.tempSphere = new THREE.Sphere();
+    
+    // Dynamic parameters with better initial values
     this.dynamicParams = {
-      minRadius: 200,
-      maxRadius: 800,
-      verticalSpread: 300,
-      densityFactor: 0.8,
-      renderDistance: 3, // Number of chunks to render in each direction
-      maxGalaxiesPerChunk: 50
+      minRadius: 100,
+      maxRadius: 1200,
+      verticalSpread: 400,
+      densityFactor: 1,
+      renderDistance: 4, // Increased for better initial view
+      maxGalaxiesPerChunk: 100,
+      initialLoadDelay: 100, // ms to wait before full load
+      frustumCullingEnabled: true
     };
   }
 
-  // Initialize chunk system with camera
   initializeChunks(camera) {
     this.camera = camera;
+    // Set initial camera position for better overview
+    if (camera && !this.initialized) {
+      camera.position.set(0, 100, 200);
+      camera.lookAt(0, 0, 0);
+    }
     this.updateVisibleChunks();
   }
 
-  // Calculate optimal universe parameters based on performance
   calculateUniverseParams(galaxyCount, fps) {
-    const scaleFactor = Math.cbrt(galaxyCount / 100);
+    // Only adjust params if we have stable fps readings
+    if (this.frameCount < 60) return this.dynamicParams;
+
+    // Scale parameters based on galaxy count and fps
+    const scaleFactor = Math.min(1.5, Math.cbrt(galaxyCount / 1000));
     
-    // Adjust parameters based on FPS
     if (fps < 30) {
-      this.dynamicParams.renderDistance = 2;
-      this.dynamicParams.maxGalaxiesPerChunk = 30;
-    } else if (fps > 50) {
-      this.dynamicParams.renderDistance = 4;
-      this.dynamicParams.maxGalaxiesPerChunk = 70;
+      this.dynamicParams.renderDistance = 3;
+      this.dynamicParams.maxGalaxiesPerChunk = 50;
+      this.dynamicParams.frustumCullingEnabled = true;
+    } else if (fps > 55) {
+      this.dynamicParams.renderDistance = 5;
+      this.dynamicParams.maxGalaxiesPerChunk = 150;
+      this.dynamicParams.frustumCullingEnabled = false;
     }
 
+    // Adjust size based on galaxy count
+    this.dynamicParams.maxRadius = Math.max(800, Math.min(1500, 1200 * scaleFactor));
+    
     return this.dynamicParams;
   }
 
-  // Get chunk key from position
   getChunkKey(position) {
     const x = Math.floor(position[0] / this.chunkSize);
     const y = Math.floor(position[1] / this.chunkSize);
@@ -53,149 +76,214 @@ class UniverseOptimizer {
     return `${x},${y},${z}`;
   }
 
-  // Update chunks based on new galaxy positions
   updateChunks(galaxies, positions) {
     this.chunks.clear();
     
-    galaxies.forEach((galaxy, index) => {
-      const pos = positions[index];
+    // Pre-calculate chunk assignments
+    const chunkAssignments = new Map();
+    
+    positions.forEach((pos, index) => {
       const chunkKey = this.getChunkKey(pos);
-      
-      if (!this.chunks.has(chunkKey)) {
-        this.chunks.set(chunkKey, new Set());
+      if (!chunkAssignments.has(chunkKey)) {
+        chunkAssignments.set(chunkKey, []);
       }
-      this.chunks.get(chunkKey).add({
-        galaxy,
-        position: pos,
-        index
-      });
+      chunkAssignments.get(chunkKey).push({ index, pos });
+    });
 
-      // Update bounding sphere
-      const sphere = new THREE.Sphere(
-        new THREE.Vector3(...pos),
-        Math.sqrt(galaxy.transactions.length) * 2
-      );
-      this.boundingSpheres.set(index, sphere);
+    // Process chunk assignments in batches
+    chunkAssignments.forEach((items, chunkKey) => {
+      const chunkGalaxies = new Set();
+      items.forEach(({ index, pos }) => {
+        if (chunkGalaxies.size < this.dynamicParams.maxGalaxiesPerChunk) {
+          chunkGalaxies.add({
+            galaxy: galaxies[index],
+            position: pos,
+            index
+          });
+          
+          // Update bounding sphere with optimized calculation
+          this.tempVector.set(pos[0], pos[1], pos[2]);
+          const radius = Math.sqrt(galaxies[index].transactions.length) * 2;
+          this.tempSphere.set(this.tempVector, radius);
+          this.boundingSpheres.set(index, this.tempSphere.clone());
+        }
+      });
+      this.chunks.set(chunkKey, chunkGalaxies);
     });
   }
 
-  // Update visible chunks based on camera position and frustum
   updateVisibleChunks() {
     if (!this.camera) return;
 
+    // Throttle updates
+    const now = performance.now();
+    if (now - this.lastUpdate < this.updateInterval && this.initialized) {
+      return;
+    }
+    this.lastUpdate = now;
+
+    // First frame optimization
+    if (!this.initialized) {
+      this.initialized = true;
+      this.dynamicParams.renderDistance = 6; // Wider initial view
+      this.dynamicParams.frustumCullingEnabled = false; // Disable culling initially
+      setTimeout(() => {
+        this.dynamicParams.renderDistance = 4;
+        this.dynamicParams.frustumCullingEnabled = true;
+      }, this.dynamicParams.initialLoadDelay);
+    }
+
     this.visibleChunks.clear();
-    this.frustum.setFromProjectionMatrix(
-      this.projScreenMatrix.multiplyMatrices(
-        this.camera.projectionMatrix,
-        this.camera.matrixWorldInverse
-      )
-    );
+    
+    // Only update frustum if culling is enabled
+    if (this.dynamicParams.frustumCullingEnabled) {
+      this.frustum.setFromProjectionMatrix(
+        this.projScreenMatrix.multiplyMatrices(
+          this.camera.projectionMatrix,
+          this.camera.matrixWorldInverse
+        )
+      );
+    }
 
     const cameraChunk = this.getChunkKey(this.camera.position.toArray());
     const [baseX, baseY, baseZ] = cameraChunk.split(',').map(Number);
 
-    // Check chunks in view frustum
-    for (let x = -this.dynamicParams.renderDistance; x <= this.dynamicParams.renderDistance; x++) {
-      for (let y = -this.dynamicParams.renderDistance; y <= this.dynamicParams.renderDistance; y++) {
-        for (let z = -this.dynamicParams.renderDistance; z <= this.dynamicParams.renderDistance; z++) {
-          const checkChunk = `${baseX + x},${baseY + y},${baseZ + z}`;
+    // Optimized chunk checking
+    const renderDist = this.dynamicParams.renderDistance;
+    for (let x = -renderDist; x <= renderDist; x++) {
+      for (let y = -renderDist; y <= renderDist; y++) {
+        for (let z = -renderDist; z <= renderDist; z++) {
+          // Distance optimization
+          if (x*x + y*y + z*z > renderDist * renderDist) continue;
           
-          if (this.chunks.has(checkChunk)) {
-            const chunkCenter = new THREE.Vector3(
-              (baseX + x) * this.chunkSize + this.chunkSize / 2,
-              (baseY + y) * this.chunkSize + this.chunkSize / 2,
-              (baseZ + z) * this.chunkSize + this.chunkSize / 2
-            );
-            
-            const chunkSphere = new THREE.Sphere(chunkCenter, this.chunkSize * Math.SQRT2);
-            
-            if (this.frustum.intersectsSphere(chunkSphere)) {
-              this.visibleChunks.add(checkChunk);
-              
-              // Queue chunk for loading if not already loaded
-              if (!this.loadedChunks.has(checkChunk)) {
-                this.queueChunkLoad(checkChunk);
-              }
-            }
+          const checkChunk = `${baseX + x},${baseY + y},${baseZ + z}`;
+          if (!this.chunks.has(checkChunk)) continue;
+
+          // Quick distance check first
+          this.tempVector.set(
+            (baseX + x) * this.chunkSize + this.chunkSize / 2,
+            (baseY + y) * this.chunkSize + this.chunkSize / 2,
+            (baseZ + z) * this.chunkSize + this.chunkSize / 2
+          );
+
+          const distToCamera = this.tempVector.distanceTo(this.camera.position);
+          if (distToCamera > this.dynamicParams.maxRadius * 1.5) continue;
+
+          // Only do frustum check if enabled
+          if (this.dynamicParams.frustumCullingEnabled) {
+            this.tempSphere.set(this.tempVector, this.chunkSize * Math.SQRT2);
+            if (!this.frustum.intersectsSphere(this.tempSphere)) continue;
+          }
+
+          this.visibleChunks.add(checkChunk);
+          
+          // Efficient chunk loading
+          if (!this.loadedChunks.has(checkChunk)) {
+            this.queueChunkLoad(checkChunk);
           }
         }
       }
     }
+
+    this.frameCount++;
   }
 
-  // Queue chunk for loading
   queueChunkLoad(chunkKey) {
     if (!this.chunkLoadQueue.includes(chunkKey)) {
       this.chunkLoadQueue.push(chunkKey);
-      this.processLoadQueue();
+      if (!this.isLoading) {
+        this.processLoadQueue();
+      }
     }
   }
 
-  // Process chunk load queue
   async processLoadQueue() {
     if (this.isLoading || this.chunkLoadQueue.length === 0) return;
     
     this.isLoading = true;
-    const chunkKey = this.chunkLoadQueue.shift();
     
-    // Simulate chunk loading delay
-    await new Promise(resolve => setTimeout(resolve, 50));
-    
-    this.loadedChunks.add(chunkKey);
-    this.isLoading = false;
-    
-    // Continue processing queue
-    if (this.chunkLoadQueue.length > 0) {
-      this.processLoadQueue();
+    // Process chunks in batches for better performance
+    while (this.chunkLoadQueue.length > 0) {
+      const batch = this.chunkLoadQueue.splice(0, 5); // Process 5 chunks at a time
+      batch.forEach(chunkKey => this.loadedChunks.add(chunkKey));
+      
+      // Small delay between batches to prevent frame drops
+      if (this.chunkLoadQueue.length > 0) {
+        await new Promise(resolve => setTimeout(resolve, 16)); // One frame delay
+      }
     }
+    
+    this.isLoading = false;
   }
 
-  // Check if a galaxy should be rendered
   shouldRenderGalaxy(galaxyIndex, position) {
-    const chunkKey = this.getChunkKey(position);
-    
-    // Check if chunk is visible and loaded
-    if (!this.visibleChunks.has(chunkKey) || !this.loadedChunks.has(chunkKey)) {
-      return false;
+    // Always render during initial load
+    if (!this.initialized || this.frameCount < 60) {
+      return true;
     }
 
-    // Frustum culling check
+    const chunkKey = this.getChunkKey(position);
+
+    // Basic visibility check
+    if (!this.visibleChunks.has(chunkKey)) {
+      // Distance-based fallback for edge cases
+      this.tempVector.set(position[0], position[1], position[2]);
+      const distToCamera = this.tempVector.distanceTo(this.camera.position);
+      return distToCamera < this.dynamicParams.maxRadius;
+    }
+
+    // Skip detailed checks if culling is disabled
+    if (!this.dynamicParams.frustumCullingEnabled) {
+      return true;
+    }
+
+    // Optimized frustum culling
     const sphere = this.boundingSpheres.get(galaxyIndex);
     if (!sphere) return true;
-    
+
     return this.frustum.intersectsSphere(sphere);
   }
 
-  // Get LOD level based on distance and performance
   getLODLevel(distance, fps) {
-    const baseLOD = distance > 1000 ? 0 : distance > 500 ? 1 : 2;
-    
-    // Adjust LOD based on performance
-    if (fps < 30) {
-      return Math.max(0, baseLOD - 1);
+    // Skip LOD during initial load
+    if (!this.initialized || this.frameCount < 60) {
+      return 2; // Highest detail
     }
-    
+
+    // Dynamic LOD based on distance and FPS
+    let baseLOD = distance > this.dynamicParams.maxRadius * 0.8 ? 0 : 
+                  distance > this.dynamicParams.maxRadius * 0.5 ? 1 : 2;
+
+    // Adjust based on performance
+    if (fps < 30) {
+      baseLOD = Math.max(0, baseLOD - 1);
+    } else if (fps > 55 && baseLOD < 2) {
+      baseLOD++;
+    }
+
     return baseLOD;
   }
 
-  // Clear unused chunk data
   clearUnusedData() {
-    // Remove chunks that are far from visible chunks
+    if (!this.initialized) return;
+    
+    // Remove chunks that haven't been visible recently
     const chunksToRemove = Array.from(this.loadedChunks)
       .filter(key => !this.visibleChunks.has(key));
-    
+
     chunksToRemove.forEach(key => {
       this.loadedChunks.delete(key);
     });
   }
 
-  // Get optimization statistics
   getStats() {
     return {
       visibleChunks: this.visibleChunks.size,
       loadedChunks: this.loadedChunks.size,
       queuedChunks: this.chunkLoadQueue.length,
-      totalChunks: this.chunks.size
+      totalChunks: this.chunks.size,
+      fps: Math.round(1000 / (performance.now() - this.lastUpdate)),
+      frameCount: this.frameCount
     };
   }
 }

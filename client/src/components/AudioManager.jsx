@@ -1,7 +1,6 @@
 import React, { useRef, useState, useEffect } from 'react';
 
 if (typeof window !== 'undefined') {
-  // Initialize the global state
   window.audioManagerState = {
     isMuted: true,
     handleGalaxyHover: null,
@@ -9,7 +8,7 @@ if (typeof window !== 'undefined') {
   };
 }
 
-const AudioManager = ({ isMapExpanded, selectedGalaxy, onBackToUniverse, onChange }) => {
+const AudioManager = ({ isMapExpanded, onChange }) => {
   const backgroundMusicRef = useRef(null);
   const galaxyHoverSoundRef = useRef(null);
   const [isMuted, setIsMuted] = useState(true);
@@ -41,29 +40,23 @@ const AudioManager = ({ isMapExpanded, selectedGalaxy, onBackToUniverse, onChang
     };
   }, []);
 
-  // Update global mute state when local state changes
   useEffect(() => {
     window.audioManagerState.isMuted = isMuted;
   }, [isMuted]);
 
   const handleGalaxyHover = (galaxyId, delay = 200) => {
-    console.log('Galaxy hover triggered. Muted status:', window.audioManagerState.isMuted);
-    if (window.audioManagerState.isMuted || selectedGalaxy) {
-      console.log('Hover sound should not play - Muted:', window.audioManagerState.isMuted, 'Selected:', !!selectedGalaxy);
+    if (window.audioManagerState.isMuted) {
       return;
     }
 
-    // Clear any existing timeout
     if (hoverTimeoutRef.current) {
       clearTimeout(hoverTimeoutRef.current);
     }
 
-    // Set new timeout for hover sound
     hoverTimeoutRef.current = setTimeout(() => {
       if (activeGalaxyHoverRef.current !== galaxyId) {
         activeGalaxyHoverRef.current = galaxyId;
         if (galaxyHoverSoundRef.current) {
-          console.log('Playing hover sound. Muted status:', window.audioManagerState.isMuted);
           galaxyHoverSoundRef.current.currentTime = 0;
           galaxyHoverSoundRef.current.play().catch(err => {
             console.error('Failed to play hover sound:', err);
@@ -93,23 +86,15 @@ const AudioManager = ({ isMapExpanded, selectedGalaxy, onBackToUniverse, onChang
   };
 
   const handleClick = async () => {
-    if (selectedGalaxy) {
-      onBackToUniverse?.();
-      return;
-    }
-
     const newMutedState = !isMuted;
-    console.log('Changing mute state to:', newMutedState);
     setIsMuted(newMutedState);
     onChange?.(newMutedState);
 
     if (newMutedState) {
-      console.log('Muting all sounds');
       backgroundMusicRef.current?.pause();
       galaxyHoverSoundRef.current?.pause();
     } else {
       try {
-        console.log('Unmuting - attempting to play background music');
         await backgroundMusicRef.current?.play();
       } catch (error) {
         console.error('Audio playback failed:', error);
@@ -147,7 +132,7 @@ const AudioManager = ({ isMapExpanded, selectedGalaxy, onBackToUniverse, onChang
       }}
     >
       <i 
-        className={selectedGalaxy ? "ri-arrow-left-line" : (isMuted ? "ri-volume-mute-line" : "ri-volume-up-line")}
+        className={isMuted ? "ri-volume-mute-line" : "ri-volume-up-line"}
         style={{ fontSize: '1.2em' }}
       />
     </button>

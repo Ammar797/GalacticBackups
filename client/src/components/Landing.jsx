@@ -24,9 +24,9 @@ export default function LandingPage() {
 function Logo() {
   return (
     <div className="text-3xl font-bold text-white">
-      <span className="text-blue-200">Cel</span>
-      <span className="text-indigo-200">est</span>
-      <span className="text-purple-200">ia</span>
+      <span className="text-blue-200">Gal</span>
+      <span className="text-indigo-200">ac</span>
+      <span className="text-purple-200">tic</span>
     </div>
   )
 }
@@ -37,21 +37,21 @@ function SocialIcons() {
       {/* Increased gap to 16 for more spacing */}
       <a href="#" className="hover:opacity-80 transition-opacity">
         <img 
-          src="https://galaxyrailway-production.up.railway.app/textures/TweetX.png" 
+          src="https://galactic-production.up.railway.app/textures/TweetX.png" 
           alt="Twitter Icon" 
           style={{ width: '35px', height: '20px' }} // Set to 35px for a smaller size
         />
       </a>
       <a href="#" className="hover:opacity-80 transition-opacity">
         <img 
-          src="https://galaxyrailway-production.up.railway.app/textures/ndex.png" 
+          src="https://galactic-production.up.railway.app/textures/ndex.png" 
           alt="Dex Icon" 
           style={{ width: '60px', height: '45px' }} // Set to 60px for a smaller size
         />
       </a>
       <a href="#" className="hover:opacity-80 transition-opacity">
         <img 
-          src="https://galaxyrailway-production.up.railway.app/textures/notess-removebg-preview.png" 
+          src="https://galactic-production.up.railway.app/textures/notess-removebg-preview.png" 
           alt="Notes Icon" 
           style={{ 
             width: '20px', // Set to 35px for a smaller size

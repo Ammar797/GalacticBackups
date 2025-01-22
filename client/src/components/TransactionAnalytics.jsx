@@ -66,7 +66,11 @@ const TransactionAnalytics = ({ galaxies = [], solitaryPlanets = [], handleTrans
     width: isMobile ? '90%' : 'auto',
     minWidth: isMobile ? 'unset' : '400px',
     maxWidth: isMobile ? '400px' : 'unset',
-    fontSize: isMobile ? '12px' : '14px'
+    fontSize: isMobile ? '12px' : '14px',
+    userSelect: 'none',
+    WebkitUserSelect: 'none',
+    MozUserSelect: 'none',
+    msUserSelect: 'none'
   };
 
   return (

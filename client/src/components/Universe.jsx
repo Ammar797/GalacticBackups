@@ -90,6 +90,28 @@ const Universe = () => {
   const allTransactionsRef = useRef(new Set());
   const galaxyPositionsRef = useRef(new Map());
 
+  useEffect(() => {
+    // Check both if it's first time ever AND first load this session
+    const firstTimeEver = !localStorage.getItem('hasLoadedBefore');
+    const hasReloadedThisSession = sessionStorage.getItem('hasReloadedThisSession');
+    
+    if (!hasReloadedThisSession) {
+      // Set both flags
+      localStorage.setItem('hasLoadedBefore', 'true');
+      sessionStorage.setItem('hasReloadedThisSession', 'true');
+      localStorage.setItem('skipWelcome', 'true');
+      
+      // Wait for initial load then reload
+      const reloadTimer = setTimeout(() => {
+        window.location.reload();
+      }, 2500);
+  
+      return () => clearTimeout(reloadTimer);
+    }
+  }, []);
+
+
+
   const checkBounds = (position) => {
     const universeRadius = selectedGalaxy ? 40 : 2400;
     const distance = Math.sqrt(position.x * position.x + position.z * position.z);
@@ -538,6 +560,8 @@ const handleKeyDown = useCallback((e) => {
     wsRef.current = ws;
   
     // Cleanup function
+
+
     return () => {
       if (ws.readyState === WebSocket.OPEN) {
         ws.close(1000, 'Component unmounting');
@@ -882,6 +906,8 @@ const handleKeyDown = useCallback((e) => {
       }
     }, [selectedGalaxy, galaxies]);
 
+  
+
 
    
 
@@ -890,7 +916,7 @@ const handleKeyDown = useCallback((e) => {
        <AudioManager 
   isMapExpanded={isMapExpanded}
   selectedGalaxy={selectedGalaxy}
-  onBackToUniverse={handleBackToUniverse}
+  // Remove the onBackToUniverse prop to prevent duplicate back button
   onChange={setIsMuted}
 />
   
@@ -1067,37 +1093,80 @@ const handleKeyDown = useCallback((e) => {
   maxDistance={selectedGalaxy ? 60 : 1200}
   minDistance={selectedGalaxy ? 5 : 50}
   onChange={() => {
-    if (mainCameraRef.current) {
-      universeOptimizer.current.updateVisibleChunks();
+    if (!mainCameraRef.current || !controlsRef.current) return;
+    
+    // Throttle the optimizer updates to prevent excessive calls
+    if (!controlsRef.current._optimizerTimeout) {
+      controlsRef.current._optimizerTimeout = setTimeout(() => {
+        universeOptimizer.current.updateVisibleChunks();
+        controlsRef.current._optimizerTimeout = null;
+      }, 16); // Roughly one frame
+    }
+    
+    const camera = mainCameraRef.current;
+    const controls = controlsRef.current;
+    
+    // Get boundaries based on current mode
+    const maxRadius = selectedGalaxy ? 60 : 1200;
+    const minRadius = selectedGalaxy ? 5 : 50;
+    const maxY = selectedGalaxy ? 30 : 600;
+    const minY = selectedGalaxy ? -30 : -600;
+    
+    // Get current camera direction and up vector
+    const direction = new THREE.Vector3();
+    camera.getWorldDirection(direction);
+    
+    // Calculate bounds
+    const targetDistance = camera.position.distanceTo(controls.target);
+    
+    // Handle zoom bounds
+    if (targetDistance > maxRadius || targetDistance < minRadius) {
+      const clampedDistance = Math.min(Math.max(targetDistance, minRadius), maxRadius);
+      const offset = direction.multiplyScalar(-clampedDistance);
+      camera.position.copy(controls.target).add(offset);
+    }
+    
+    // Handle Y-axis bounds without affecting direction
+    if (camera.position.y > maxY || camera.position.y < minY) {
+      camera.position.y = Math.min(Math.max(camera.position.y, minY), maxY);
+    }
+    
+    // Handle radial bounds for panning while preserving direction
+    const horizontalPosition = new THREE.Vector2(camera.position.x, camera.position.z);
+    const horizontalDistance = horizontalPosition.length();
+    
+    if (horizontalDistance > maxRadius) {
+      const scale = maxRadius / horizontalDistance;
+      camera.position.x *= scale;
+      camera.position.z *= scale;
       
-      // Add bounds check here too
-      const camera = mainCameraRef.current;
-      const distance = camera.position.length();
-      if (distance > (selectedGalaxy ? 60 : 1200) || distance < (selectedGalaxy ? 5 : 50)) {
-        // Reset to nearest valid position
-        const direction = camera.position.clone().normalize();
-        const newDistance = Math.min(Math.max(distance, selectedGalaxy ? 5 : 50), selectedGalaxy ? 60 : 1200);
-        camera.position.copy(direction.multiplyScalar(newDistance));
+      // Adjust target proportionally to maintain viewing angle
+      const targetHorizontal = new THREE.Vector2(controls.target.x, controls.target.z);
+      const targetDistance = targetHorizontal.length();
+      if (targetDistance > maxRadius) {
+        const targetScale = maxRadius / targetDistance;
+        controls.target.x *= targetScale;
+        controls.target.z *= targetScale;
       }
     }
   }}
   autoRotate={!selectedGalaxy}
-  autoRotateSpeed={0.3}
+  autoRotateSpeed={0.2} // Reduced for smoother default rotation
   maxPolarAngle={Math.PI * 0.75}
   minPolarAngle={Math.PI * 0.25}
-  zoomSpeed={0.8} // Reduced from 1
-  rotateSpeed={0.3} // Reduced from 0.5
-  panSpeed={3} // Reduced from 5
+  zoomSpeed={0.6} // Further reduced for more controlled zoom
+  rotateSpeed={0.5} // Slightly increased for smoother rotation
+  panSpeed={1.5} // Reduced for more controlled panning
   enableDamping={true}
-  dampingFactor={0.2} // Increased from 0.1 for smoother movement
+  dampingFactor={0.15} // Adjusted for smoother movement
   mouseButtons={{
     LEFT: THREE.MOUSE.ROTATE,
     MIDDLE: THREE.MOUSE.DOLLY,
     RIGHT: THREE.MOUSE.PAN
   }}
-  screenSpacePanning={true}
+  screenSpacePanning={false} // Changed to false to prevent vertical panning issues
   enablePan={true}
-  keyPanSpeed={25}
+  keyPanSpeed={15} // Reduced for more controlled keyboard panning
 />
               </>
             )}
@@ -1107,21 +1176,24 @@ const handleKeyDown = useCallback((e) => {
         {/* Status Info */}
         {
         <div style={{ 
-          position: 'absolute', 
           bottom: '5rem',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          zIndex: 10,
-          color: 'white',
-          background: 'rgba(0,0,0,0.7)',
-          padding: '0.75rem 1.5rem',
-          borderRadius: '0.5rem',
-          fontFamily: 'monospace',
-          fontSize: '1.1rem',
-          maxWidth: '80%',
-          textAlign: 'center',
-          opacity: statusInfo ? 1 : 0,
-          transition: 'opacity 0.3s ease'
+    left: '50%',
+    transform: 'translateX(-50%)',
+    zIndex: 10,
+    color: 'white',
+    background: 'rgba(0,0,0,0.7)',
+    padding: '0.75rem 1.5rem',
+    borderRadius: '0.5rem',
+    fontFamily: 'monospace',
+    userSelect: 'none',
+    WebkitUserSelect: 'none',
+    MozUserSelect: 'none',
+    msUserSelect: 'none',
+    fontSize: '1.1rem',
+    maxWidth: '80%',
+    textAlign: 'center',
+    opacity: statusInfo ? 1 : 0,
+    transition: 'opacity 0.3s ease'
         }}>
           {statusInfo}
         </div>
